@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="ObfuscarTools.67a862c1-c736-4058-8d11-dd07bb7da6ab" Version="1.0.0" Language="en-US" Publisher="Avinab Malla" />
+        <Identity Id="ObfuscarTools.67a862c1-c736-4058-8d11-dd07bb7da6ab" Version="1.0.1" Language="en-US" Publisher="Avinab Malla" />
         <DisplayName>Obfuscar Tools for Visual Studio</DisplayName>
         <Description xml:space="preserve">Integrates Obfuscar into .NET projects for release builds and ClickOnce deployments.</Description>
         <ReleaseNotes>Resources\ReleaseNotes.txt</ReleaseNotes>
@@ -10,15 +10,6 @@
         <Tags>Obfuscation, Obfuscar, ClickOnce</Tags>
     </Metadata>
     <Installation>
-        <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Community">
-            <ProductArchitecture>x86</ProductArchitecture>
-        </InstallationTarget>
-        <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Pro">
-            <ProductArchitecture>x86</ProductArchitecture>
-        </InstallationTarget>
-        <InstallationTarget Version="[16.0,17.0)" Id="Microsoft.VisualStudio.Enterprise">
-            <ProductArchitecture>x86</ProductArchitecture>
-        </InstallationTarget>
         <InstallationTarget Version="[17.0,18.0)" Id="Microsoft.VisualStudio.Community">
             <ProductArchitecture>amd64</ProductArchitecture>
         </InstallationTarget>
