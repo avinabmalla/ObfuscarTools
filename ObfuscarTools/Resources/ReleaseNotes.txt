@@ -1,0 +1,4 @@
+﻿v1.0.0
+8 November 2021
+-First Release
+-Uses Obfuscar 2.2.31.0
