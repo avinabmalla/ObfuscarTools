@@ -11,6 +11,10 @@ Debugging will not work on obfuscated executables or libraries. Use Ctrl+F5 to r
 
 ## How to Use
 
+Download and install the extension from the Visual Studio Marketplace
+
+[https://marketplace.visualstudio.com/items?itemName=AvinabMalla.obfuscarvs](https://marketplace.visualstudio.com/items?itemName=AvinabMalla.obfuscarvs)
+
 Three new items are added to the Tools menu.
 
 ![Menu Items](https://github.com/avinabmalla/ObfuscarTools/blob/master/ObfuscarTools/Resources/Obfuscar1.png?raw=true)
