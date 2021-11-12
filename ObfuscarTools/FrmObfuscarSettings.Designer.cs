@@ -45,11 +45,21 @@
 			this.chkUseKoreanNames = new System.Windows.Forms.CheckBox();
 			this.btnSave = new System.Windows.Forms.Button();
 			this.btnCancel = new System.Windows.Forms.Button();
-			this.label1 = new System.Windows.Forms.Label();
-			this.lblConfigName = new System.Windows.Forms.Label();
 			this.lblProjectName = new System.Windows.Forms.Label();
 			this.label2 = new System.Windows.Forms.Label();
+			this.groupBox1 = new System.Windows.Forms.GroupBox();
+			this.txtNamespaces = new System.Windows.Forms.TextBox();
+			this.groupBox2 = new System.Windows.Forms.GroupBox();
+			this.groupBox3 = new System.Windows.Forms.GroupBox();
+			this.dgvConfigurations = new System.Windows.Forms.DataGridView();
+			this.colName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.colPlatform = new System.Windows.Forms.DataGridViewTextBoxColumn();
+			this.colConfig = new System.Windows.Forms.DataGridViewCheckBoxColumn();
 			this.tableLayoutPanel1.SuspendLayout();
+			this.groupBox1.SuspendLayout();
+			this.groupBox2.SuspendLayout();
+			this.groupBox3.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.dgvConfigurations)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// chkRegenerateDebugInfo
@@ -64,11 +74,11 @@
 			// 
 			// tableLayoutPanel1
 			// 
-			this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+			this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.tableLayoutPanel1.ColumnCount = 1;
-			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+			this.tableLayoutPanel1.ColumnCount = 2;
+			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+			this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
 			this.tableLayoutPanel1.Controls.Add(this.chkRegenerateDebugInfo, 0, 0);
 			this.tableLayoutPanel1.Controls.Add(this.chkMarkedOnly, 0, 1);
 			this.tableLayoutPanel1.Controls.Add(this.chkRenameProperties, 0, 2);
@@ -76,16 +86,16 @@
 			this.tableLayoutPanel1.Controls.Add(this.chkRenameFields, 0, 4);
 			this.tableLayoutPanel1.Controls.Add(this.chkKeepPublicApi, 0, 5);
 			this.tableLayoutPanel1.Controls.Add(this.chkHidePrivateApi, 0, 6);
-			this.tableLayoutPanel1.Controls.Add(this.chkReuseNames, 0, 7);
-			this.tableLayoutPanel1.Controls.Add(this.chkHideStrings, 0, 8);
-			this.tableLayoutPanel1.Controls.Add(this.chkOptimizeMethods, 0, 9);
-			this.tableLayoutPanel1.Controls.Add(this.chkSuppressIldasm, 0, 10);
-			this.tableLayoutPanel1.Controls.Add(this.chkAnalyzeXaml, 0, 11);
-			this.tableLayoutPanel1.Controls.Add(this.chkUseUnicodeNames, 0, 12);
-			this.tableLayoutPanel1.Controls.Add(this.chkUseKoreanNames, 0, 13);
-			this.tableLayoutPanel1.Location = new System.Drawing.Point(12, 42);
+			this.tableLayoutPanel1.Controls.Add(this.chkReuseNames, 1, 0);
+			this.tableLayoutPanel1.Controls.Add(this.chkHideStrings, 1, 1);
+			this.tableLayoutPanel1.Controls.Add(this.chkOptimizeMethods, 1, 2);
+			this.tableLayoutPanel1.Controls.Add(this.chkSuppressIldasm, 1, 3);
+			this.tableLayoutPanel1.Controls.Add(this.chkAnalyzeXaml, 1, 4);
+			this.tableLayoutPanel1.Controls.Add(this.chkUseUnicodeNames, 1, 5);
+			this.tableLayoutPanel1.Controls.Add(this.chkUseKoreanNames, 1, 6);
+			this.tableLayoutPanel1.Location = new System.Drawing.Point(6, 19);
 			this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-			this.tableLayoutPanel1.RowCount = 14;
+			this.tableLayoutPanel1.RowCount = 7;
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
@@ -93,14 +103,7 @@
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel1.Size = new System.Drawing.Size(204, 325);
+			this.tableLayoutPanel1.Size = new System.Drawing.Size(384, 164);
 			this.tableLayoutPanel1.TabIndex = 1;
 			// 
 			// chkMarkedOnly
@@ -166,7 +169,7 @@
 			// chkReuseNames
 			// 
 			this.chkReuseNames.AutoSize = true;
-			this.chkReuseNames.Location = new System.Drawing.Point(3, 164);
+			this.chkReuseNames.Location = new System.Drawing.Point(195, 3);
 			this.chkReuseNames.Name = "chkReuseNames";
 			this.chkReuseNames.Size = new System.Drawing.Size(93, 17);
 			this.chkReuseNames.TabIndex = 0;
@@ -176,7 +179,7 @@
 			// chkHideStrings
 			// 
 			this.chkHideStrings.AutoSize = true;
-			this.chkHideStrings.Location = new System.Drawing.Point(3, 187);
+			this.chkHideStrings.Location = new System.Drawing.Point(195, 26);
 			this.chkHideStrings.Name = "chkHideStrings";
 			this.chkHideStrings.Size = new System.Drawing.Size(83, 17);
 			this.chkHideStrings.TabIndex = 0;
@@ -186,7 +189,7 @@
 			// chkOptimizeMethods
 			// 
 			this.chkOptimizeMethods.AutoSize = true;
-			this.chkOptimizeMethods.Location = new System.Drawing.Point(3, 210);
+			this.chkOptimizeMethods.Location = new System.Drawing.Point(195, 49);
 			this.chkOptimizeMethods.Name = "chkOptimizeMethods";
 			this.chkOptimizeMethods.Size = new System.Drawing.Size(107, 17);
 			this.chkOptimizeMethods.TabIndex = 0;
@@ -196,7 +199,7 @@
 			// chkSuppressIldasm
 			// 
 			this.chkSuppressIldasm.AutoSize = true;
-			this.chkSuppressIldasm.Location = new System.Drawing.Point(3, 233);
+			this.chkSuppressIldasm.Location = new System.Drawing.Point(195, 72);
 			this.chkSuppressIldasm.Name = "chkSuppressIldasm";
 			this.chkSuppressIldasm.Size = new System.Drawing.Size(103, 17);
 			this.chkSuppressIldasm.TabIndex = 0;
@@ -206,7 +209,7 @@
 			// chkAnalyzeXaml
 			// 
 			this.chkAnalyzeXaml.AutoSize = true;
-			this.chkAnalyzeXaml.Location = new System.Drawing.Point(3, 256);
+			this.chkAnalyzeXaml.Location = new System.Drawing.Point(195, 95);
 			this.chkAnalyzeXaml.Name = "chkAnalyzeXaml";
 			this.chkAnalyzeXaml.Size = new System.Drawing.Size(89, 17);
 			this.chkAnalyzeXaml.TabIndex = 0;
@@ -216,7 +219,7 @@
 			// chkUseUnicodeNames
 			// 
 			this.chkUseUnicodeNames.AutoSize = true;
-			this.chkUseUnicodeNames.Location = new System.Drawing.Point(3, 279);
+			this.chkUseUnicodeNames.Location = new System.Drawing.Point(195, 118);
 			this.chkUseUnicodeNames.Name = "chkUseUnicodeNames";
 			this.chkUseUnicodeNames.Size = new System.Drawing.Size(124, 17);
 			this.chkUseUnicodeNames.TabIndex = 0;
@@ -226,7 +229,7 @@
 			// chkUseKoreanNames
 			// 
 			this.chkUseKoreanNames.AutoSize = true;
-			this.chkUseKoreanNames.Location = new System.Drawing.Point(3, 302);
+			this.chkUseKoreanNames.Location = new System.Drawing.Point(195, 141);
 			this.chkUseKoreanNames.Name = "chkUseKoreanNames";
 			this.chkUseKoreanNames.Size = new System.Drawing.Size(118, 17);
 			this.chkUseKoreanNames.TabIndex = 0;
@@ -236,7 +239,7 @@
 			// btnSave
 			// 
 			this.btnSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnSave.Location = new System.Drawing.Point(142, 374);
+			this.btnSave.Location = new System.Drawing.Point(333, 604);
 			this.btnSave.Name = "btnSave";
 			this.btnSave.Size = new System.Drawing.Size(75, 23);
 			this.btnSave.TabIndex = 2;
@@ -247,31 +250,13 @@
 			// btnCancel
 			// 
 			this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnCancel.Location = new System.Drawing.Point(61, 374);
+			this.btnCancel.Location = new System.Drawing.Point(252, 604);
 			this.btnCancel.Name = "btnCancel";
 			this.btnCancel.Size = new System.Drawing.Size(75, 23);
 			this.btnCancel.TabIndex = 2;
 			this.btnCancel.Text = "Cancel";
 			this.btnCancel.UseVisualStyleBackColor = true;
 			this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
-			// 
-			// label1
-			// 
-			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(12, 26);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(75, 13);
-			this.label1.TabIndex = 1;
-			this.label1.Text = "Configuration: ";
-			// 
-			// lblConfigName
-			// 
-			this.lblConfigName.AutoSize = true;
-			this.lblConfigName.Location = new System.Drawing.Point(88, 26);
-			this.lblConfigName.Name = "lblConfigName";
-			this.lblConfigName.Size = new System.Drawing.Size(65, 13);
-			this.lblConfigName.TabIndex = 1;
-			this.lblConfigName.Text = "UNKNOWN";
 			// 
 			// lblProjectName
 			// 
@@ -291,19 +276,105 @@
 			this.label2.TabIndex = 1;
 			this.label2.Text = "Project:";
 			// 
+			// groupBox1
+			// 
+			this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.groupBox1.Controls.Add(this.txtNamespaces);
+			this.groupBox1.Location = new System.Drawing.Point(12, 392);
+			this.groupBox1.Name = "groupBox1";
+			this.groupBox1.Size = new System.Drawing.Size(395, 206);
+			this.groupBox1.TabIndex = 1;
+			this.groupBox1.TabStop = false;
+			this.groupBox1.Text = "Namespaces To Skip";
+			// 
+			// txtNamespaces
+			// 
+			this.txtNamespaces.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.txtNamespaces.Location = new System.Drawing.Point(6, 19);
+			this.txtNamespaces.Multiline = true;
+			this.txtNamespaces.Name = "txtNamespaces";
+			this.txtNamespaces.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+			this.txtNamespaces.Size = new System.Drawing.Size(383, 181);
+			this.txtNamespaces.TabIndex = 0;
+			// 
+			// groupBox2
+			// 
+			this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.groupBox2.Controls.Add(this.tableLayoutPanel1);
+			this.groupBox2.Location = new System.Drawing.Point(11, 198);
+			this.groupBox2.Name = "groupBox2";
+			this.groupBox2.Size = new System.Drawing.Size(396, 188);
+			this.groupBox2.TabIndex = 3;
+			this.groupBox2.TabStop = false;
+			this.groupBox2.Text = "Obfuscar Settings";
+			// 
+			// groupBox3
+			// 
+			this.groupBox3.Controls.Add(this.dgvConfigurations);
+			this.groupBox3.Location = new System.Drawing.Point(11, 25);
+			this.groupBox3.Name = "groupBox3";
+			this.groupBox3.Size = new System.Drawing.Size(396, 167);
+			this.groupBox3.TabIndex = 4;
+			this.groupBox3.TabStop = false;
+			this.groupBox3.Text = "Configurations";
+			// 
+			// dgvConfigurations
+			// 
+			this.dgvConfigurations.AllowUserToAddRows = false;
+			this.dgvConfigurations.AllowUserToDeleteRows = false;
+			this.dgvConfigurations.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.dgvConfigurations.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.dgvConfigurations.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.colName,
+            this.colPlatform,
+            this.colConfig});
+			this.dgvConfigurations.Location = new System.Drawing.Point(6, 18);
+			this.dgvConfigurations.Name = "dgvConfigurations";
+			this.dgvConfigurations.RowHeadersVisible = false;
+			this.dgvConfigurations.Size = new System.Drawing.Size(384, 143);
+			this.dgvConfigurations.TabIndex = 0;
+			// 
+			// colName
+			// 
+			this.colName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+			this.colName.HeaderText = "Name";
+			this.colName.Name = "colName";
+			this.colName.ReadOnly = true;
+			// 
+			// colPlatform
+			// 
+			this.colPlatform.HeaderText = "Platform";
+			this.colPlatform.Name = "colPlatform";
+			this.colPlatform.ReadOnly = true;
+			// 
+			// colConfig
+			// 
+			this.colConfig.HeaderText = "Enable";
+			this.colConfig.Name = "colConfig";
+			this.colConfig.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+			this.colConfig.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+			this.colConfig.Width = 60;
+			// 
 			// FrmObfuscarSettings
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(229, 402);
+			this.ClientSize = new System.Drawing.Size(420, 632);
+			this.Controls.Add(this.groupBox3);
+			this.Controls.Add(this.groupBox2);
 			this.Controls.Add(this.btnCancel);
 			this.Controls.Add(this.btnSave);
-			this.Controls.Add(this.tableLayoutPanel1);
 			this.Controls.Add(this.lblProjectName);
-			this.Controls.Add(this.lblConfigName);
 			this.Controls.Add(this.label2);
-			this.Controls.Add(this.label1);
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+			this.Controls.Add(this.groupBox1);
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "FrmObfuscarSettings";
@@ -311,6 +382,11 @@
 			this.Load += new System.EventHandler(this.FrmObfuscarSettings_Load);
 			this.tableLayoutPanel1.ResumeLayout(false);
 			this.tableLayoutPanel1.PerformLayout();
+			this.groupBox1.ResumeLayout(false);
+			this.groupBox1.PerformLayout();
+			this.groupBox2.ResumeLayout(false);
+			this.groupBox3.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.dgvConfigurations)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -333,11 +409,17 @@
 		private System.Windows.Forms.CheckBox chkAnalyzeXaml;
 		private System.Windows.Forms.Button btnSave;
 		private System.Windows.Forms.Button btnCancel;
-		private System.Windows.Forms.Label label1;
-		private System.Windows.Forms.Label lblConfigName;
 		private System.Windows.Forms.CheckBox chkUseUnicodeNames;
 		private System.Windows.Forms.CheckBox chkUseKoreanNames;
 		private System.Windows.Forms.Label lblProjectName;
 		private System.Windows.Forms.Label label2;
+		private System.Windows.Forms.GroupBox groupBox1;
+		private System.Windows.Forms.TextBox txtNamespaces;
+		private System.Windows.Forms.GroupBox groupBox2;
+		private System.Windows.Forms.GroupBox groupBox3;
+		private System.Windows.Forms.DataGridView dgvConfigurations;
+		private System.Windows.Forms.DataGridViewTextBoxColumn colName;
+		private System.Windows.Forms.DataGridViewTextBoxColumn colPlatform;
+		private System.Windows.Forms.DataGridViewCheckBoxColumn colConfig;
 	}
 }

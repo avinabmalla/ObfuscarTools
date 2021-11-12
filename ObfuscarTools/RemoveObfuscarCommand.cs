@@ -105,19 +105,21 @@ namespace ObfuscarTools
 			var vs = new DotNetProject(pkg, vsp);
 
 
-			var configurationName = vs.ConfigurationName;
+			var buildConfig = vs.ActiveBuildConfig;
 
-			if (vs.IsObfuscated(configurationName) == false)
+			var configDisplayName = $"{buildConfig.ConfigurationName}[{buildConfig.PlatformName}]";
+
+			if (vs.IsObfuscated(buildConfig.ConfigurationName,buildConfig.PlatformName) == false)
 			{
-				MessageBox.Show($"The project \"{projectName}\" is not set up for obfuscation for {configurationName} builds.");
+				MessageBox.Show($"The project \"{projectName}\" is not set up for obfuscation for {configDisplayName} config.");
 			}
 			else
 			{
 				var result = MessageBox.Show($"Remove obfuscation command fom Project \"{projectName}\"?", "Obfuscar Tools", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 				if (result == DialogResult.No) return;
-				var mgr = new AfterCompileManager(vsp, vs.IsNetFrameworkProject());
-				mgr.RemoveAfterCompileTarget(configurationName);
-				MessageBox.Show($"The project \"{projectName}\" will not be obfuscated for {configurationName} builds now.");
+
+				vs.RemoveObfuscarCommand(buildConfig.ConfigurationName,buildConfig.PlatformName);	
+				MessageBox.Show($"The project \"{projectName}\" will not be obfuscated for {configDisplayName} builds now.");
 
 			}
 		}

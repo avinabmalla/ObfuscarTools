@@ -104,31 +104,17 @@ namespace ObfuscarTools
 				return;
 			}
 			var vs = new DotNetProject(pkg, vsp);
-			vs.GetOutputPath();
+			var buildConfig = vs.ActiveBuildConfig;
+			var configDisplayName = $"{buildConfig.ConfigurationName}[{buildConfig.PlatformName}]";
 
-
-			var configurationName = vs.ConfigurationName;
-
-			var result = MessageBox.Show($"Obfuscate Project \"{projectName}\" on {configurationName} Build?", "Obfuscar Tools", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
+			var result = MessageBox.Show($"Obfuscate Project \"{projectName}\" on {configDisplayName} Build?", "Obfuscar Tools", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 			if (result == DialogResult.No) return;
 
-			vs.CopyObfuscar();
 
-			var configFileName = "obfuscar_" + configurationName + ".xml";
+			vs.AddObfuscarBaseConfig();
+			vs.AddObfuscarCommand(buildConfig.ConfigurationName, buildConfig.PlatformName);
 
-			vs.WriteConfig(Path.Combine(vs.obfuscarDir , configFileName));
-			var mgr = new AfterCompileManager(vsp, vs.IsNetFrameworkProject());
-			var cmd = new AfterCompileCommand()
-			{
-				Configuration = configurationName,
-				ConfigXmlName = configFileName,
-				IntermediatePath = vs.GetOutputPath()
-			};
-
-			mgr.AddAfterCompileCommand(cmd);
-
-			MessageBox.Show($"Project \"{projectName}\" will now be obfuscated for {configurationName} builds.");
+			MessageBox.Show($"Project \"{projectName}\" will now be obfuscated for {configDisplayName} builds.");
 
 		}
 	}

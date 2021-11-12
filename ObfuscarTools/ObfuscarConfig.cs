@@ -8,8 +8,35 @@ using System.Xml;
 
 namespace ObfuscarTools
 {
-	internal class ObfuscarConfig
+	public class ConfigWriter
 	{
+		public static void WriteVar(XmlWriter writer, string name, bool value)
+		{
+			writer.WriteStartElement("Var");
+			writer.WriteAttributeString("name", name);
+			writer.WriteAttributeString("value", value ? "true" : "false");
+			writer.WriteEndElement();
+		}
+
+		public static void WriteVar(XmlWriter writer, string name, string value)
+		{
+			writer.WriteStartElement("Var");
+			writer.WriteAttributeString("name", name);
+			writer.WriteAttributeString("value", value);
+			writer.WriteEndElement();
+		}
+
+	}
+
+	/// <summary>
+	/// Obfuscar config common for all build configurations
+	/// </summary>
+	internal class ObfuscarBaseConfig
+	{
+		public string Module { get; set; }
+		public List<string> AssemblySearchPaths { get; set; } = new List<string>();
+		public List<string> NamespacesToSkip { get; set; } = new List<string>();
+
 		public string KeyFile { get; set; }
 		public bool RegenerateDebugInfo { get; set; } = false;
 		public bool MarkedOnly { get; set; } = false;
@@ -26,62 +53,48 @@ namespace ObfuscarTools
 		public bool SuppressIldasm { get; set; } = true;
 		public bool AnalyzeXaml { get; set; } = true;
 
-		public string InPath { get; set; }
-		public string OutPath { get; set; }
-		public List<string> AssemblySearchPaths { get; set; } = new List<string>();
-		public string Module { get; set; }
-
-
-
-		private static void WriteVar(XmlWriter writer, string name, bool value)
-		{
-			writer.WriteStartElement("Var");
-			writer.WriteAttributeString("name", name);
-			writer.WriteAttributeString("value", value ? "true" : "false");
-			writer.WriteEndElement();
-		}
-
-		private static void WriteVar(XmlWriter writer, string name, string value)
-		{
-			writer.WriteStartElement("Var");
-			writer.WriteAttributeString("name", name);
-			writer.WriteAttributeString("value", value);
-			writer.WriteEndElement();
-		}
-
 
 		public void Write(string path)
 		{
 			if (File.Exists(path)) File.Delete(path);
 			XmlWriterSettings settings = new XmlWriterSettings { Indent = true };
-			var writer = XmlWriter.Create(path, settings);
-			writer.WriteStartElement("Obfuscator");
+			Directory.CreateDirectory(Path.GetDirectoryName(path));
 
-			WriteVar(writer, "InPath", InPath);
-			WriteVar(writer, "OutPath", OutPath);
-			WriteVar(writer, "RegenerateDebugInfo", RegenerateDebugInfo);
-			WriteVar(writer, "MarkedOnly", MarkedOnly);
-			WriteVar(writer, "RenameProperties", RenameProperties);
-			WriteVar(writer, "RenameEvents", RenameEvents);
-			WriteVar(writer, "RenameFields", RenameFields);
-			WriteVar(writer, "KeepPublicApi", KeepPublicApi);
-			WriteVar(writer, "HidePrivateApi", HidePrivateApi);
-			WriteVar(writer, "ReuseNames", ReuseNames);
-			WriteVar(writer, "HideStrings", HideStrings);
-			WriteVar(writer, "OptimizeMethods", OptimizeMethods);
-			WriteVar(writer, "SuppressIldasm", SuppressIldasm);
-			WriteVar(writer, "AnalyzeXaml", AnalyzeXaml);
-			WriteVar(writer, "UseUnicodeNames", UseUnicodeNames);
-			WriteVar(writer, "UseKoreanNames", UseKoreanNames);
+			var writer = XmlWriter.Create(path, settings);
+			writer.WriteStartElement("Include");
+
+			ConfigWriter.WriteVar(writer, "RegenerateDebugInfo", RegenerateDebugInfo);
+			ConfigWriter.WriteVar(writer, "MarkedOnly", MarkedOnly);
+			ConfigWriter.WriteVar(writer, "RenameProperties", RenameProperties);
+			ConfigWriter.WriteVar(writer, "RenameEvents", RenameEvents);
+			ConfigWriter.WriteVar(writer, "RenameFields", RenameFields);
+			ConfigWriter.WriteVar(writer, "KeepPublicApi", KeepPublicApi);
+			ConfigWriter.WriteVar(writer, "HidePrivateApi", HidePrivateApi);
+			ConfigWriter.WriteVar(writer, "ReuseNames", ReuseNames);
+			ConfigWriter.WriteVar(writer, "HideStrings", HideStrings);
+			ConfigWriter.WriteVar(writer, "OptimizeMethods", OptimizeMethods);
+			ConfigWriter.WriteVar(writer, "SuppressIldasm", SuppressIldasm);
+			ConfigWriter.WriteVar(writer, "AnalyzeXaml", AnalyzeXaml);
+			ConfigWriter.WriteVar(writer, "UseUnicodeNames", UseUnicodeNames);
+			ConfigWriter.WriteVar(writer, "UseKoreanNames", UseKoreanNames);
 
 			if (string.IsNullOrWhiteSpace(KeyFile) == false)
 			{
-				WriteVar(writer, "KeyFile", KeyFile);
+				ConfigWriter.WriteVar(writer, "KeyFile", KeyFile);
 			}
 
 
 			writer.WriteStartElement("Module");
 			writer.WriteAttributeString("file", Module);
+
+			foreach (var ns in NamespacesToSkip)
+			{
+				if (string.IsNullOrWhiteSpace(ns)) continue;
+				writer.WriteStartElement("SkipNamespace");
+				writer.WriteAttributeString("name", ns);
+				writer.WriteEndElement();
+			}
+
 			writer.WriteEndElement();
 
 
@@ -100,9 +113,10 @@ namespace ObfuscarTools
 		}
 
 
-		public static ObfuscarConfig Read(string configFile)
+		public static ObfuscarBaseConfig Read(string configFile)
 		{
-			var ret = new ObfuscarConfig();
+			var ret = new ObfuscarBaseConfig();
+			if (File.Exists(configFile) == false) return ret;
 			var reader = XmlReader.Create(configFile);
 			while (reader.Read())
 			{
@@ -114,8 +128,6 @@ namespace ObfuscarTools
 					var varValue = reader.GetAttribute("value");
 					var boolValue = varValue.ToLower() == "true";
 
-					if (varName == "InPath") ret.InPath = varValue;
-					if (varName == "OutPath") ret.OutPath = varValue;
 					if (varName == "RegenerateDebugInfo") ret.RegenerateDebugInfo = boolValue;
 					if (varName == "MarkedOnly") ret.MarkedOnly = boolValue;
 					if (varName == "RenameProperties") ret.RenameProperties = boolValue;
@@ -140,9 +152,73 @@ namespace ObfuscarTools
 				{
 					ret.AssemblySearchPaths.Add(reader.GetAttribute("path"));
 				}
+				else if (reader.Name == "SkipNamespace")
+				{
+					var namespaceName = reader.GetAttribute("name");
+					if (string.IsNullOrWhiteSpace(namespaceName) == false)
+					{
+						ret.NamespacesToSkip.Add(namespaceName);
+					}
+				}
 			}
 			reader.Close();
 			return ret;
+		}
+	}
+
+	internal class ObfuscarConfig
+	{
+		public string InPath { get; set; }
+		public string OutPath { get; set; }
+		public string BaseConfigPath { get; set; }
+		public static ObfuscarConfig Read(string configFilePath)
+		{
+			var ret = new ObfuscarConfig();
+			if (File.Exists(configFilePath) == false) return ret;
+			var reader = XmlReader.Create(configFilePath);
+			while (reader.Read())
+			{
+				if (reader.NodeType != XmlNodeType.Element) continue;
+
+				if (reader.Name == "Var")
+				{
+					var varName = reader.GetAttribute("name");
+					var varValue = reader.GetAttribute("value");
+
+					if (varName == "InPath") ret.InPath = varValue;
+					if (varName == "OutPath") ret.OutPath = varValue;
+				}
+				else if (reader.Name == "Include")
+				{
+					ret.BaseConfigPath = reader.GetAttribute("path");
+				}
+			}
+
+
+			reader.Close();
+			return ret;
+		}
+
+
+
+		public void Write(string path)
+		{
+			if (File.Exists(path)) File.Delete(path);
+			XmlWriterSettings settings = new XmlWriterSettings { Indent = true };
+			var writer = XmlWriter.Create(path, settings);
+			writer.WriteStartElement("Obfuscator");
+
+			ConfigWriter.WriteVar(writer, "InPath", InPath);
+			ConfigWriter.WriteVar(writer, "OutPath", OutPath);
+
+			writer.WriteStartElement("Include");
+			writer.WriteAttributeString("path", BaseConfigPath);
+			writer.WriteEndElement();
+
+
+			writer.WriteEndElement();
+			writer.Close();
+
 		}
 
 	}

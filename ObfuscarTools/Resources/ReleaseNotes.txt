@@ -1,4 +1,8 @@
-﻿v1.0.0
+﻿v1.1.0
+12 November 2021
+-Improved configuration dialog. You can now select configurations to enable obfuscar for, and also enter namespaces.
+
+v1.0.0
 8 November 2021
 -First Release
 -Uses Obfuscar 2.2.31.0

@@ -7,8 +7,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using VSLangProj;
 using Task = System.Threading.Tasks.Task;
+using EnvDTE;
+using VSLangProj;
 
 namespace ObfuscarTools
 {
@@ -97,25 +98,16 @@ namespace ObfuscarTools
 
 			var project = SolutionManager.GetActiveProject();
 			var projectName = project.Name;
+
 			var vsp = project.Object as VSProject;
 			if (vsp == null)
 			{
 				MessageBox.Show($"The project \"{projectName}\" is not a supported .NET Project.");
 				return;
 			}
-			var vs = new DotNetProject(pkg, vsp);
-			vs.GetOutputPath();
-
-
-
-			var configurationName = vs.ConfigurationName;
-
-			var configFileName = "obfuscar_" + configurationName + ".xml";
 
 			var f = new FrmObfuscarSettings();
-			f.ProjectName = vsp.Project.Name;
-			f.ConfigurationName = configurationName;
-			f.ConfigurationPath = Path.Combine(vs.obfuscarDir, configFileName);
+			f.DotNetProject = new DotNetProject(pkg, vsp);
 			f.Show();
 		}
 	}

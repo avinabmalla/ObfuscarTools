@@ -16,26 +16,30 @@ namespace ObfuscarTools
 	public class AfterCompileManager
 	{
 		VSProject Project;
-		DTE dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
+		DTE dte;
 
 		public string TargetName { get; set; } = "AfterCompile";
 		public string AfterTargets { get; set; } = "";
 
 		public AfterCompileManager(VSProject proj, bool isFramework)
 		{
+			ThreadHelper.ThrowIfNotOnUIThread();
+
+			dte = Package.GetGlobalService(typeof(SDTE)) as DTE;
 			Project = proj;
 			if (isFramework)
 			{
 				TargetName = "AfterCompile";
 				AfterTargets = "";
 			}
-			else{
+			else
+			{
 				TargetName = "PostBuild";
 				AfterTargets = "PostBuildEvent";
 			}
 		}
 
-		public bool HasAfterCompileTarget(string confName)
+		public bool HasAfterCompileTarget(string buildConfig, string platform)
 		{
 			ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -47,13 +51,13 @@ namespace ObfuscarTools
 			XmlNode AfterCompileTarget = (from XmlNode n in ProjectNode.ChildNodes where n.Name == "Target" && n.Attributes["Name"]?.Value == TargetName select n).FirstOrDefault();
 			if (AfterCompileTarget == null) return false;
 
-			var execNode = GetNode(AfterCompileTarget, confName);
+			var execNode = GetNode(AfterCompileTarget, buildConfig, platform);
 			if (execNode == null) return false;
 
 			return true;
 		}
 
-		public void RemoveAfterCompileTarget(string confName)
+		public void RemoveAfterCompileTarget(string buildConfig, string platform)
 		{
 			ThreadHelper.ThrowIfNotOnUIThread();
 			var path = Project.Project.FullName;
@@ -64,7 +68,7 @@ namespace ObfuscarTools
 			XmlNode AfterCompileTarget = (from XmlNode n in ProjectNode.ChildNodes where n.Name == "Target" && n.Attributes["Name"]?.Value == TargetName select n).FirstOrDefault();
 
 			if (AfterCompileTarget == null) return;
-			var execNode = GetNode(AfterCompileTarget, confName);
+			var execNode = GetNode(AfterCompileTarget, buildConfig, platform);
 
 			if (execNode == null) return;
 			AfterCompileTarget.RemoveChild(execNode);
@@ -88,7 +92,7 @@ namespace ObfuscarTools
 				AfterCompileTarget = AddAfterCompileTargetNode(xmlDoc, ProjectNode);
 			}
 
-			var execNode = GetNode(AfterCompileTarget, cmd.Configuration);
+			var execNode = GetNode(AfterCompileTarget, cmd.BuildConfiguration, cmd.PlatformName);
 			if (execNode == null)
 			{
 				execNode = xmlDoc.CreateElement("Exec", xmlDoc.DocumentElement.NamespaceURI);
@@ -143,14 +147,14 @@ namespace ObfuscarTools
 			return AfterCompileTarget;
 		}
 
-		private XmlNode GetNode(XmlNode AfterCompileTarget, string confName)
+		private XmlNode GetNode(XmlNode AfterCompileTarget, string buildConfig, string platform)
 		{
 			var execNodes = (from XmlNode n in AfterCompileTarget.ChildNodes where n.Name == "Exec" select n).ToList();
 			foreach (var nd in execNodes)
 			{
 				var config = nd.Attributes["Command"];
 				if (config == null) continue;
-				if (config.Value.StartsWith("echo " + confName + "\r\n"))
+				if (config.Value.StartsWith("echo " + buildConfig + "@@" + platform + "\r\n"))
 				{
 					return nd;
 				}
@@ -162,7 +166,8 @@ namespace ObfuscarTools
 
 	public class AfterCompileCommand
 	{
-		public string Configuration { get; set; }
+		public string PlatformName { get; set; }
+		public string BuildConfiguration { get; set; }
 		public string ObfuscarPath { get; set; } = @"$(ProjectDir)_Obfuscar\Obfuscar.Console.exe";
 		public string ConfigXmlName { get; set; }
 		public string IntermediatePath { get; set; }
@@ -171,13 +176,15 @@ namespace ObfuscarTools
 		{
 			get
 			{
+				var pName = PlatformName;
+				if (PlatformName == "Any CPU") pName = "AnyCPU";
 				var commands = new List<string>();
-				commands.Add("echo " + Configuration);
+				commands.Add("echo " + BuildConfiguration + "@@" + PlatformName);
 
-				string cmd = $"if \"$(ConfigurationName)\" == \"{Configuration}\" (";
+				string cmd = $"if \"$(ConfigurationName)\" == \"{BuildConfiguration}\" (if \"$(PlatformName)\" == \"{pName}\" (";
 				cmd += $"\"{ObfuscarPath}\" \"$(ProjectDir)_Obfuscar\\{ConfigXmlName}\"\r\n";
 				cmd += $"xcopy /e /v \"$(ProjectDir){IntermediatePath}\\Out\\\" \"$(ProjectDir){IntermediatePath}\" /Y";
-				cmd += ")";
+				cmd += "))";
 
 				commands.Add(cmd);
 
