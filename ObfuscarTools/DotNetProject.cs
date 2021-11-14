@@ -206,8 +206,6 @@ namespace ObfuscarTools
 				{
 					config.AssemblySearchPaths.Add(pp);
 				}
-
-				config.AssemblySearchPaths.Add(pp);
 			}
 
 			config.Write(path);
