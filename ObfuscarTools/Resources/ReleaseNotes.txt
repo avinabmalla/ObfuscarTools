@@ -1,4 +1,9 @@
-﻿v1.1.0
+﻿v1.1.1
+15 November 2021
+-Fix for Assembly Search Paths.
+
+
+v1.1.0
 12 November 2021
 -Improved configuration dialog. You can now select configurations to enable obfuscar for, and also enter namespaces.
 

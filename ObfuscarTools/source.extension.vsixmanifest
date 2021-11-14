@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="ObfuscarTools.67a862c1-c736-4058-8d11-dd07bb7da6ab" Version="1.1.0" Language="en-US" Publisher="Avinab Malla" />
+        <Identity Id="ObfuscarTools.67a862c1-c736-4058-8d11-dd07bb7da6ab" Version="1.1.1" Language="en-US" Publisher="Avinab Malla" />
         <DisplayName>Obfuscar Tools for Visual Studio</DisplayName>
         <Description xml:space="preserve">Integrates Obfuscar into .NET projects for release builds and ClickOnce deployments.</Description>
         <ReleaseNotes>Resources\ReleaseNotes.txt</ReleaseNotes>
