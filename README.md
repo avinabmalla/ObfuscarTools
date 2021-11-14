@@ -23,6 +23,6 @@ Click "Protect Using Obfuscar" to set the current project's current configuratio
 
 Click "Remove Obfuscar Protection" to stop automatic obfuscation for the current configuration.
 
-"Obfuscar Settings" Will let you tune the obfuscar settings.
+"Obfuscar Settings" Will let you tune the obfuscar settings. You can select the configurations to enable obfuscar for, and also enter namespaces to skip.
 
 ![Obfuscar Settings](https://github.com/avinabmalla/ObfuscarTools/blob/master/ObfuscarTools/Resources/Obfuscar2.png?raw=true)
