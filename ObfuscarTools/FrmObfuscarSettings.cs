@@ -33,7 +33,7 @@ namespace ObfuscarTools
 				dgvConfigurations.Rows[index].Cells[2].Value = DotNetProject.IsObfuscated(c.ConfigurationName, c.PlatformName);
 			}
 
-			var cfg = ObfuscarBaseConfig.Read(DotNetProject.ObfuscarBaseConfigFile);
+			var cfg = DotNetProject.LoadBaseConfig();
 			lblProjectName.Text = DotNetProject.Name;
 
 			chkRegenerateDebugInfo.Checked = cfg.RegenerateDebugInfo;
@@ -56,7 +56,9 @@ namespace ObfuscarTools
 
 		private void btnSave_Click(object sender, EventArgs e)
 		{
-			var cfg = ObfuscarBaseConfig.Read(DotNetProject.ObfuscarBaseConfigFile);
+			Microsoft.VisualStudio.Shell.ThreadHelper.ThrowIfNotOnUIThread();
+
+			var cfg = DotNetProject.LoadBaseConfig();
 
 			cfg.RegenerateDebugInfo = chkRegenerateDebugInfo.Checked;
 			cfg.MarkedOnly = chkMarkedOnly.Checked;
@@ -80,29 +82,21 @@ namespace ObfuscarTools
 			cfg.Write(DotNetProject.ObfuscarBaseConfigFile);
 
 
-			bool hasObfuscarEnabled = false;
+			var enabledKeys = new List<string>();
 			foreach (DataGridViewRow row in dgvConfigurations.Rows)
 			{
+				if (row.Cells[2].Value as bool? != true) continue;
+
 				var name = row.Cells[0].Value.ToString();
 				var platform = row.Cells[1].Value.ToString();
-				var enabled = row.Cells[2].Value as bool?;
-				if (enabled == null) continue;
-
-				hasObfuscarEnabled |= enabled.Value;
-				if (enabled.Value)
-				{
-					DotNetProject.AddObfuscarCommand(name, platform);
-				}
-				else
-				{
-					DotNetProject.RemoveObfuscarCommand(name, platform);
-				}
+				enabledKeys.Add(ObfuscarProjectFile.Key(name, platform));
 			}
 
-			if (hasObfuscarEnabled)
+			if (enabledKeys.Count > 0)
 			{
-				DotNetProject.AddObfuscarBaseConfig();
+				DotNetProject.CopyObfuscar();
 			}
+			DotNetProject.SetObfuscatedConfigurations(enabledKeys);
 			this.Close();
 		}
 

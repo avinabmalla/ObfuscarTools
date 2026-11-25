@@ -2,39 +2,20 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
+using System.Xml.Linq;
 
 namespace ObfuscarTools
 {
-	public class ConfigWriter
-	{
-		public static void WriteVar(XmlWriter writer, string name, bool value)
-		{
-			writer.WriteStartElement("Var");
-			writer.WriteAttributeString("name", name);
-			writer.WriteAttributeString("value", value ? "true" : "false");
-			writer.WriteEndElement();
-		}
-
-		public static void WriteVar(XmlWriter writer, string name, string value)
-		{
-			writer.WriteStartElement("Var");
-			writer.WriteAttributeString("name", name);
-			writer.WriteAttributeString("value", value);
-			writer.WriteEndElement();
-		}
-
-	}
-
 	/// <summary>
-	/// Obfuscar config common for all build configurations
+	/// Obfuscar config common for all build configurations (_Obfuscar\obfuscar.xml).
+	/// Obfuscar.targets includes it in a config generated for each build.
 	/// </summary>
 	internal class ObfuscarBaseConfig
 	{
-		public string Module { get; set; }
-		public List<string> AssemblySearchPaths { get; set; } = new List<string>();
+		// Both variables are defined by the generated config.
+		private const string DefaultModule = "$(InPath)\\$(TargetFileName)";
+		private const string AnonymousTypes = "*AnonymousType*";
+
 		public List<string> NamespacesToSkip { get; set; } = new List<string>();
 
 		public string KeyFile { get; set; }
@@ -53,173 +34,133 @@ namespace ObfuscarTools
 		public bool SuppressIldasm { get; set; } = true;
 		public bool AnalyzeXaml { get; set; } = true;
 
-
-		public void Write(string path)
+		/// <summary>Settings for a project that has no config file yet.</summary>
+		public static ObfuscarBaseConfig CreateDefault(bool isWpf)
 		{
-			if (File.Exists(path)) File.Delete(path);
-			XmlWriterSettings settings = new XmlWriterSettings { Indent = true };
-			Directory.CreateDirectory(Path.GetDirectoryName(path));
-
-			var writer = XmlWriter.Create(path, settings);
-			writer.WriteStartElement("Include");
-
-			ConfigWriter.WriteVar(writer, "RegenerateDebugInfo", RegenerateDebugInfo);
-			ConfigWriter.WriteVar(writer, "MarkedOnly", MarkedOnly);
-			ConfigWriter.WriteVar(writer, "RenameProperties", RenameProperties);
-			ConfigWriter.WriteVar(writer, "RenameEvents", RenameEvents);
-			ConfigWriter.WriteVar(writer, "RenameFields", RenameFields);
-			ConfigWriter.WriteVar(writer, "KeepPublicApi", KeepPublicApi);
-			ConfigWriter.WriteVar(writer, "HidePrivateApi", HidePrivateApi);
-			ConfigWriter.WriteVar(writer, "ReuseNames", ReuseNames);
-			ConfigWriter.WriteVar(writer, "HideStrings", HideStrings);
-			ConfigWriter.WriteVar(writer, "OptimizeMethods", OptimizeMethods);
-			ConfigWriter.WriteVar(writer, "SuppressIldasm", SuppressIldasm);
-			ConfigWriter.WriteVar(writer, "AnalyzeXaml", AnalyzeXaml);
-			ConfigWriter.WriteVar(writer, "UseUnicodeNames", UseUnicodeNames);
-			ConfigWriter.WriteVar(writer, "UseKoreanNames", UseKoreanNames);
-
-			if (string.IsNullOrWhiteSpace(KeyFile) == false)
+			var config = new ObfuscarBaseConfig();
+			if (isWpf)
 			{
-				ConfigWriter.WriteVar(writer, "KeyFile", KeyFile);
+				// Renamed properties break data bindings on non-public types.
+				config.RenameProperties = false;
+				config.SuppressIldasm = false;
 			}
-
-
-			writer.WriteStartElement("Module");
-			writer.WriteAttributeString("file", Module);
-
-			foreach (var ns in NamespacesToSkip)
-			{
-				if (string.IsNullOrWhiteSpace(ns)) continue;
-				writer.WriteStartElement("SkipNamespace");
-				writer.WriteAttributeString("name", ns);
-				writer.WriteEndElement();
-			}
-
-			writer.WriteEndElement();
-
-
-			AssemblySearchPaths.Sort();
-			foreach (var assembly in AssemblySearchPaths)
-			{
-				writer.WriteStartElement("AssemblySearchPath");
-				writer.WriteAttributeString("path", assembly + "\\");
-				writer.WriteEndElement();
-			}
-
-
-			writer.WriteEndElement();
-			writer.Close();
-
+			return config;
 		}
 
+		/// <summary>Writes the settings into the file, keeping any other elements it already contains.</summary>
+		public void Write(string path)
+		{
+			Directory.CreateDirectory(Path.GetDirectoryName(path));
+			var doc = File.Exists(path) ? XDocument.Load(path) : new XDocument(new XElement("Include"));
+			var root = doc.Root;
+
+			SetVar(root, "RegenerateDebugInfo", RegenerateDebugInfo);
+			SetVar(root, "MarkedOnly", MarkedOnly);
+			SetVar(root, "RenameProperties", RenameProperties);
+			SetVar(root, "RenameEvents", RenameEvents);
+			SetVar(root, "RenameFields", RenameFields);
+			SetVar(root, "KeepPublicApi", KeepPublicApi);
+			SetVar(root, "HidePrivateApi", HidePrivateApi);
+			SetVar(root, "ReuseNames", ReuseNames);
+			SetVar(root, "HideStrings", HideStrings);
+			SetVar(root, "OptimizeMethods", OptimizeMethods);
+			SetVar(root, "SuppressIldasm", SuppressIldasm);
+			SetVar(root, "AnalyzeXaml", AnalyzeXaml);
+			SetVar(root, "UseUnicodeNames", UseUnicodeNames);
+			SetVar(root, "UseKoreanNames", UseKoreanNames);
+			if (string.IsNullOrWhiteSpace(KeyFile) == false) SetVar(root, "KeyFile", KeyFile);
+
+			var module = root.Element("Module");
+			if (module == null)
+			{
+				module = new XElement("Module", new XAttribute("file", DefaultModule));
+				root.Add(module);
+			}
+			else if (root.Elements("Module").Count() == 1 && (string)module.Attribute("file") != DefaultModule)
+			{
+				var file = (string)module.Attribute("file") ?? "";
+				if (file.StartsWith("$(InPath)\\", StringComparison.Ordinal))
+				{
+					// Written by version 1.x, which also listed the search paths. The build now supplies them.
+					module.SetAttributeValue("file", DefaultModule);
+					root.Elements("AssemblySearchPath").Remove();
+				}
+			}
+
+			module.Elements("SkipNamespace").Remove();
+			module.Add(NamespacesToSkip
+				.Where(ns => string.IsNullOrWhiteSpace(ns) == false)
+				.Select(ns => new XElement("SkipNamespace", new XAttribute("name", ns.Trim()))));
+
+			if (module.Elements("SkipType").Any(e => (string)e.Attribute("name") == AnonymousTypes) == false)
+			{
+				module.Add(new XElement("SkipType",
+					new XAttribute("name", AnonymousTypes),
+					new XAttribute("skipProperties", "true"),
+					new XAttribute("skipMethods", "true"),
+					new XAttribute("skipFields", "true"),
+					new XAttribute("skipEvents", "true"),
+					new XAttribute("skipStringHiding", "true")));
+			}
+
+			doc.Save(path);
+		}
+
+		private static void SetVar(XElement root, string name, bool value)
+		{
+			SetVar(root, name, value ? "true" : "false");
+		}
+
+		private static void SetVar(XElement root, string name, string value)
+		{
+			var element = root.Elements("Var").FirstOrDefault(e => (string)e.Attribute("name") == name);
+			if (element != null)
+			{
+				element.SetAttributeValue("value", value);
+				return;
+			}
+
+			element = new XElement("Var", new XAttribute("name", name), new XAttribute("value", value));
+			var lastVar = root.Elements("Var").LastOrDefault();
+			if (lastVar != null) lastVar.AddAfterSelf(element);
+			else root.AddFirst(element);
+		}
 
 		public static ObfuscarBaseConfig Read(string configFile)
 		{
 			var ret = new ObfuscarBaseConfig();
 			if (File.Exists(configFile) == false) return ret;
-			var reader = XmlReader.Create(configFile);
-			while (reader.Read())
+			var root = XDocument.Load(configFile).Root;
+
+			foreach (var element in root.Elements("Var"))
 			{
-				if (reader.NodeType != XmlNodeType.Element) continue;
+				var varName = (string)element.Attribute("name");
+				var varValue = (string)element.Attribute("value") ?? "";
+				var boolValue = varValue.ToLower() == "true";
 
-				if (reader.Name == "Var")
-				{
-					var varName = reader.GetAttribute("name");
-					var varValue = reader.GetAttribute("value");
-					var boolValue = varValue.ToLower() == "true";
-
-					if (varName == "RegenerateDebugInfo") ret.RegenerateDebugInfo = boolValue;
-					if (varName == "MarkedOnly") ret.MarkedOnly = boolValue;
-					if (varName == "RenameProperties") ret.RenameProperties = boolValue;
-					if (varName == "RenameEvents") ret.RenameEvents = boolValue;
-					if (varName == "RenameFields") ret.RenameFields = boolValue;
-					if (varName == "KeepPublicApi") ret.KeepPublicApi = boolValue;
-					if (varName == "HidePrivateApi") ret.HidePrivateApi = boolValue;
-					if (varName == "ReuseNames") ret.ReuseNames = boolValue;
-					if (varName == "HideStrings") ret.HideStrings = boolValue;
-					if (varName == "OptimizeMethods") ret.OptimizeMethods = boolValue;
-					if (varName == "SuppressIldasm") ret.SuppressIldasm = boolValue;
-					if (varName == "AnalyzeXaml") ret.AnalyzeXaml = boolValue;
-					if (varName == "AnalyzeXaml") ret.AnalyzeXaml = boolValue;
-					if (varName == "UseUnicodeNames") ret.UseUnicodeNames = boolValue;
-					if (varName == "UseKoreanNames") ret.UseKoreanNames = boolValue;
-				}
-				else if (reader.Name == "Module")
-				{
-					ret.Module = reader.GetAttribute("file");
-				}
-				else if (reader.Name == "AssemblySearchPath")
-				{
-					ret.AssemblySearchPaths.Add(reader.GetAttribute("path"));
-				}
-				else if (reader.Name == "SkipNamespace")
-				{
-					var namespaceName = reader.GetAttribute("name");
-					if (string.IsNullOrWhiteSpace(namespaceName) == false)
-					{
-						ret.NamespacesToSkip.Add(namespaceName);
-					}
-				}
-			}
-			reader.Close();
-			return ret;
-		}
-	}
-
-	internal class ObfuscarConfig
-	{
-		public string InPath { get; set; }
-		public string OutPath { get; set; }
-		public string BaseConfigPath { get; set; }
-		public static ObfuscarConfig Read(string configFilePath)
-		{
-			var ret = new ObfuscarConfig();
-			if (File.Exists(configFilePath) == false) return ret;
-			var reader = XmlReader.Create(configFilePath);
-			while (reader.Read())
-			{
-				if (reader.NodeType != XmlNodeType.Element) continue;
-
-				if (reader.Name == "Var")
-				{
-					var varName = reader.GetAttribute("name");
-					var varValue = reader.GetAttribute("value");
-
-					if (varName == "InPath") ret.InPath = varValue;
-					if (varName == "OutPath") ret.OutPath = varValue;
-				}
-				else if (reader.Name == "Include")
-				{
-					ret.BaseConfigPath = reader.GetAttribute("path");
-				}
+				if (varName == "RegenerateDebugInfo") ret.RegenerateDebugInfo = boolValue;
+				if (varName == "MarkedOnly") ret.MarkedOnly = boolValue;
+				if (varName == "RenameProperties") ret.RenameProperties = boolValue;
+				if (varName == "RenameEvents") ret.RenameEvents = boolValue;
+				if (varName == "RenameFields") ret.RenameFields = boolValue;
+				if (varName == "KeepPublicApi") ret.KeepPublicApi = boolValue;
+				if (varName == "HidePrivateApi") ret.HidePrivateApi = boolValue;
+				if (varName == "ReuseNames") ret.ReuseNames = boolValue;
+				if (varName == "HideStrings") ret.HideStrings = boolValue;
+				if (varName == "OptimizeMethods") ret.OptimizeMethods = boolValue;
+				if (varName == "SuppressIldasm") ret.SuppressIldasm = boolValue;
+				if (varName == "AnalyzeXaml") ret.AnalyzeXaml = boolValue;
+				if (varName == "UseUnicodeNames") ret.UseUnicodeNames = boolValue;
+				if (varName == "UseKoreanNames") ret.UseKoreanNames = boolValue;
+				if (varName == "KeyFile") ret.KeyFile = varValue;
 			}
 
+			ret.NamespacesToSkip = root.Descendants("SkipNamespace")
+				.Select(e => (string)e.Attribute("name"))
+				.Where(name => string.IsNullOrWhiteSpace(name) == false)
+				.ToList();
 
-			reader.Close();
 			return ret;
 		}
-
-
-
-		public void Write(string path)
-		{
-			if (File.Exists(path)) File.Delete(path);
-			XmlWriterSettings settings = new XmlWriterSettings { Indent = true };
-			var writer = XmlWriter.Create(path, settings);
-			writer.WriteStartElement("Obfuscator");
-
-			ConfigWriter.WriteVar(writer, "InPath", InPath);
-			ConfigWriter.WriteVar(writer, "OutPath", OutPath);
-
-			writer.WriteStartElement("Include");
-			writer.WriteAttributeString("path", BaseConfigPath);
-			writer.WriteEndElement();
-
-
-			writer.WriteEndElement();
-			writer.Close();
-
-		}
-
 	}
 }

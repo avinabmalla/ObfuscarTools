@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Obfuscar Tools for Visual Studio.
+  Import at the END of a project file. Obfuscation is enabled per configuration with:
+    <ObfuscarEnabledFor>;Release|AnyCPU;</ObfuscarEnabledFor>
+  The compiler output is left untouched. The obfuscated copy replaces @(IntermediateAssembly),
+  so the output folder, single-file bundle, ReadyToRun and ClickOnce all consume it.
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <_ObfuscarKey>;$(Configuration)|$(Platform);</_ObfuscarKey>
+    <!-- Skipped for design-time builds and for the temporary project WPF compiles during markup compilation. -->
+    <_ObfuscarEnabled Condition="'$(DesignTimeBuild)' != 'true' And !$(MSBuildProjectName.EndsWith('_wpftmp')) And $(ObfuscarEnabledFor.Contains('$(_ObfuscarKey)'))">true</_ObfuscarEnabled>
+  </PropertyGroup>
+
+  <!-- IntermediateOutputPath is not final when this file is imported, so paths are set inside a target. -->
+  <Target Name="ObfuscarPaths">
+    <PropertyGroup>
+      <_ObfuscarInPath>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(IntermediateOutputPath)').TrimEnd('\'))</_ObfuscarInPath>
+      <!-- Handles an absolute IntermediateOutputPath. -->
+      <_ObfuscarInPath Condition="$([System.IO.Path]::IsPathRooted('$(IntermediateOutputPath)'))">$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)').TrimEnd('\'))</_ObfuscarInPath>
+      <_ObfuscarOutPath>$(_ObfuscarInPath)\Obfuscated</_ObfuscarOutPath>
+      <_ObfuscarOutFile>$(_ObfuscarOutPath)\$(TargetFileName)</_ObfuscarOutFile>
+      <_ObfuscarWrapper>$(_ObfuscarInPath)\obfuscar.generated.xml</_ObfuscarWrapper>
+      <_ObfuscarSearchFile>$(_ObfuscarInPath)\obfuscar.paths.generated.xml</_ObfuscarSearchFile>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="ObfuscarRun"
+          AfterTargets="AfterCompile"
+          DependsOnTargets="ObfuscarPaths"
+          Condition="'$(_ObfuscarEnabled)' == 'true'"
+          Inputs="@(IntermediateAssembly->'%(FullPath)');$(MSBuildThisFileDirectory)obfuscar.xml;$(MSBuildThisFileFullPath);$(MSBuildProjectFullPath)"
+          Outputs="$(_ObfuscarOutFile)">
+
+    <ItemGroup>
+      <_ObfuscarSearchDir Include="@(ReferencePath->'%(RootDir)%(Directory)')" />
+      <_ObfuscarSearchDirDistinct Include="@(_ObfuscarSearchDir->Distinct())" />
+
+      <_ObfuscarLine Include="&lt;Obfuscator&gt;" />
+      <_ObfuscarLine Include="&lt;Var name=&quot;InPath&quot; value=&quot;$(_ObfuscarInPath.Replace('&amp;', '&amp;amp%3B'))&quot; /&gt;" />
+      <_ObfuscarLine Include="&lt;Var name=&quot;OutPath&quot; value=&quot;$(_ObfuscarOutPath.Replace('&amp;', '&amp;amp%3B'))&quot; /&gt;" />
+      <_ObfuscarLine Include="&lt;Var name=&quot;TargetFileName&quot; value=&quot;$(TargetFileName.Replace('&amp;', '&amp;amp%3B'))&quot; /&gt;" />
+      <!-- Obfuscar loads a module as soon as it reads it, using only the search paths seen so far. It reads
+           includes before the paths in the same file, so the paths need their own file, included first. -->
+      <_ObfuscarLine Include="&lt;Include path=&quot;$(_ObfuscarSearchFile.Replace('&amp;', '&amp;amp%3B'))&quot; /&gt;" />
+      <_ObfuscarLine Include="&lt;Include path=&quot;$(MSBuildThisFileDirectory.Replace('&amp;', '&amp;amp%3B'))obfuscar.xml&quot; /&gt;" />
+      <_ObfuscarLine Include="&lt;/Obfuscator&gt;" />
+
+      <_ObfuscarSearchLine Include="&lt;Include&gt;" />
+      <_ObfuscarSearchLine Include="&lt;AssemblySearchPath path=&quot;$([System.String]::Copy('%(_ObfuscarSearchDirDistinct.Identity)').Replace('&amp;', '&amp;amp%3B'))&quot; /&gt;" />
+      <_ObfuscarSearchLine Include="&lt;/Include&gt;" />
+    </ItemGroup>
+
+    <!-- Remove the previous result first, so a failed run can never ship a stale file. -->
+    <Delete Files="$(_ObfuscarOutFile)" />
+    <MakeDir Directories="$(_ObfuscarOutPath)" />
+    <WriteLinesToFile File="$(_ObfuscarSearchFile)" Lines="@(_ObfuscarSearchLine)" Overwrite="true" Encoding="UTF-8" />
+    <WriteLinesToFile File="$(_ObfuscarWrapper)" Lines="@(_ObfuscarLine)" Overwrite="true" Encoding="UTF-8" />
+
+    <Exec Command="&quot;$(MSBuildThisFileDirectory)Obfuscar.Console.exe&quot; &quot;$(_ObfuscarWrapper)&quot;" />
+    <Error Condition="!Exists('$(_ObfuscarOutFile)')" Text="Obfuscar did not produce $(_ObfuscarOutFile). Check the Module element in obfuscar.xml." />
+
+    <OnError ExecuteTargets="ObfuscarDeleteOutput" />
+  </Target>
+
+  <Target Name="ObfuscarDeleteOutput" DependsOnTargets="ObfuscarPaths">
+    <Delete Files="$(_ObfuscarOutFile)" />
+  </Target>
+
+  <!-- No Inputs/Outputs: must apply on every build, including when ObfuscarRun is up to date.
+       BeforeTargets covers "publish no-build", where AfterCompile does not run. -->
+  <Target Name="ObfuscarSwap"
+          AfterTargets="AfterCompile"
+          BeforeTargets="CopyFilesToOutputDirectory;ComputeResolvedFilesToPublishList"
+          DependsOnTargets="ObfuscarPaths"
+          Condition="'$(_ObfuscarEnabled)' == 'true'">
+
+    <Error Condition="!Exists('$(_ObfuscarOutFile)')" Text="Obfuscated assembly not found: $(_ObfuscarOutFile). Build this configuration before publishing without building." />
+
+    <ItemGroup>
+      <_ObfuscarOriginal Include="@(IntermediateAssembly)" />
+      <IntermediateAssembly Remove="@(IntermediateAssembly)" />
+      <IntermediateAssembly Include="@(_ObfuscarOriginal->'$(_ObfuscarOutPath)\%(Filename)%(Extension)')" />
+      <!-- The original symbols contain the real names and no longer match. -->
+      <_DebugSymbolsIntermediatePath Remove="@(_DebugSymbolsIntermediatePath)" />
+      <FileWrites Include="$(_ObfuscarOutFile);$(_ObfuscarOutPath)\Mapping.txt;$(_ObfuscarWrapper);$(_ObfuscarSearchFile)" />
+    </ItemGroup>
+
+    <Message Importance="high" Text="Obfuscar: using $(_ObfuscarOutFile)" />
+  </Target>
+
+</Project>

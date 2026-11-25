@@ -362,3 +362,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /obfuscar-2.2.50
+/samples
+/PLAN.md
