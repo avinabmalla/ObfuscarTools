@@ -1,4 +1,4 @@
-﻿v1.2.0
+﻿v2.0.0
 -Uses Obfuscar 2.2.50.
 -Obfuscated builds now need the .NET 10 runtime (x64) or later, including for .NET Framework projects.
 -Supports .NET (SDK-style) projects, including WPF single-file publish. Version 1.x did not obfuscate these.
